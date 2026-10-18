@@ -1,0 +1,15 @@
+name,role,company,industry,size,source,context,last_contact_days
+Priya Nair,Head of Sales,Finlytics,Fintech,51-200,demo_request,"Asked for a demo and pricing after the webinar. Budget approved this quarter and she owns the budget.",1
+Marcus Lee,VP Revenue,Shopwave,E-commerce,201-1000,referral,"Introduced by an existing customer. Comparing us with two other vendors. Team is missing targets because lead follow-up is too slow.",3
+Aisha Khan,Sales Operations Manager,CarePath Systems,Healthcare IT,201-1000,content,"Downloaded the pipeline guide. Struggling with manual lead routing. Wants to evaluate options next month.",6
+Tom Becker,Sales Analyst,Brightline Software,SaaS / Software,51-200,signup,"Signed up for the trial. Reports to the CRO who has the final say on tools.",9
+Rahul Mehta,Founder,Kiteworks Studio,Consulting / Agency,11-50,event,"Met at the conference. Interested in learning more but no budget this year.",20
+Sofia Alvarez,Marketing Intern,Greenfield Logistics,Logistics,201-1000,signup,"Doing research for a class project. Just browsing.",2
+Daniel Wright,Director of Operations,Midland Manufacturing,Manufacturing,1001-5000,cold_list,"No reply to the first email.",40
+Neha Verma,Chief Revenue Officer,Payloop,Fintech,201-1000,outbound,"",
+Chris Dunn,Account Executive,Ledgerly,Fintech,51-200,content,"Not interested, please stop emailing me.",12
+Lena Fischer,Head of Growth,Cartly,E-commerce,51-200,demo_request,"Wants a pilot to go live by end of quarter. Currently losing leads because follow-up is manual.",0
+Omar Haddad,General Manager,Harbor Realty,Real estate,11-50,event,"Maybe next year. Not a priority right now.",25
+Grace Okafor,Customer Success Lead,Onboardly,SaaS / Software,51-200,referral,"Referred by a partner. Has a problem with churn and is evaluating tools.",4
+Elena Rossi,Chief Revenue Officer,Quotely,Fintech,51-200,referral,"Introduced by a partner. Mentioned a problem with slow follow-up.",0
+Karan Shah,Sales Intern,Brightline Software,SaaS / Software,51-200,demo_request,"Asked for a demo. Budget approved. Needs it urgent.",1
