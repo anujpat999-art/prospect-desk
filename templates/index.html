@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="desk">
+  <div>
+    <h1>Is this lead worth a call?</h1>
+    <p class="lede">Enter what you know. The score, segment and next step are worked out by clear rules and update as you type. The message is written after you save.</p>
+    <div id="errors" class="errors" role="alert" hidden></div>
+    <form id="f" class="lead-form" novalidate>
+      <fieldset>
+        <legend>The person</legend>
+        <div class="field"><label for="name">Lead name</label><input id="name" name="name" maxlength="80" autocomplete="off" required></div>
+        <div class="field"><label for="role">Role or job title</label><input id="role" name="role" maxlength="100" placeholder="e.g. Head of Sales" autocomplete="off" required></div>
+      </fieldset>
+      <fieldset>
+        <legend>Their company</legend>
+        <div class="field"><label for="company">Company</label><input id="company" name="company" maxlength="100" autocomplete="off" required></div>
+        <div class="two">
+          <div class="field"><label for="industry">Industry</label>
+            <select id="industry" name="industry">{% for i in industries %}<option{{ ' selected' if i == 'SaaS / Software' }}>{{ i }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="size">Employees</label>
+            <select id="size" name="size" required><option value="">Choose</option>{% for s in sizes %}<option>{{ s }}</option>{% endfor %}</select></div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>What we know</legend>
+        <div class="two">
+          <div class="field"><label for="source">How they found us</label>
+            <select id="source" name="source">{% for k, v in SOURCES.items() %}<option value="{{ k }}"{{ ' selected' if k == 'signup' }}>{{ v[0] }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="last_contact_days">Days since last contact</label>
+            <input id="last_contact_days" name="last_contact_days" inputmode="numeric" placeholder="Leave blank if none"></div>
+        </div>
+        <div class="field"><label for="context">Context from calls, emails or the form</label>
+          <textarea id="context" name="context" maxlength="1500" placeholder="e.g. Asked for pricing. Budget approved this quarter. Team is missing targets because follow-up is slow."></textarea>
+          <div class="hint"><span id="count">0</span> / 1,500. Demo workspace: use made-up details, not real personal data.</div></div>
+      </fieldset>
+      <div class="row" style="margin-top:6px">
+        <button id="go" type="submit">Save lead and write outreach</button>
+        <button id="example" type="button" class="quiet">Fill an example</button>
+      </div>
+      <p class="hint" style="margin-top:10px" id="mode-hint">{% if ai_on %}An AI model will draft the message, checked by rules before you see it.{% else %}No AI key is set, so the message is written by rules. The score is the same either way.{% endif %}</p>
+    </form>
+
+    <details class="import">
+      <summary>Import many leads from a CSV</summary>
+      <p class="hint">Paste rows with these columns: name, role, company, industry, size, source, context, days since last contact. A header row is optional. Up to 50 rows.</p>
+      <label for="csv" class="sr">CSV rows</label>
+      <textarea id="csv" rows="6" style="min-height:120px"></textarea>
+      <div class="row" style="margin-top:8px"><button type="button" id="import" class="quiet">Import and score</button><span id="import-msg" class="small mute" role="status"></span></div>
+    </details>
+  </div>
+
+  <aside class="sticky" aria-live="polite" aria-label="Live scorecard">
+    <div id="card">
+      <div class="empty-card"><h2>Scorecard</h2><p>Add a role and a company and the score appears here. Watch how it changes when you add what you know about their budget, timing or problem.</p></div>
+    </div>
+  </aside>
+</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% endblock %}

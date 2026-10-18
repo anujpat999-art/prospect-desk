@@ -1,0 +1,43 @@
+{# One scorecard, used by the live preview (as an HTML fragment) and by the saved lead page. #}
+{% set t = result.thresholds %}
+<section class="scorecard seg-{{ result.segment }}" aria-label="Lead scorecard">
+  <div class="score-head">
+    <div class="score-num">{{ result.score }}<span>/100</span></div>
+    <div class="score-seg"><strong>{{ result.segment_label }}</strong><span>{{ result.segment_note }}</span></div>
+  </div>
+  <div class="band" role="img" aria-label="Score {{ result.score }} out of 100, in the {{ result.segment_label }} band">
+    <div class="z z-park {{ 'on' if result.segment == 'park' }}" style="width:{{ t.nurture }}%"></div>
+    <div class="z z-nurture {{ 'on' if result.segment == 'nurture' }}" style="width:{{ t.warm - t.nurture }}%"></div>
+    <div class="z z-warm {{ 'on' if result.segment == 'warm' }}" style="width:{{ t.hot - t.warm }}%"></div>
+    <div class="z z-hot {{ 'on' if result.segment == 'hot' }}" style="width:{{ 100 - t.hot }}%"></div>
+    <i class="marker" style="left:{{ result.score }}%"></i>
+  </div>
+  <div class="ticks" aria-hidden="true">
+    <span style="left:{{ t.nurture }}%">{{ t.nurture }}</span><span style="left:{{ t.warm }}%">{{ t.warm }}</span><span style="left:{{ t.hot }}%">{{ t.hot }}</span>
+  </div>
+
+  <ul class="ledger">
+  {% for key in ['role','company','intent','source','recency'] %}{% set b = result.breakdown[key] %}
+    <li>
+      <div class="l-top"><span>{{ CATEGORY_LABELS[key] }}</span><span class="pts">{{ b.points }} / {{ b.max }}</span></div>
+      <div class="meter"><i style="width:{{ (b.points / b.max * 100)|round|int }}%"></i></div>
+      <p class="l-why">{{ b.reason }}</p>
+    </li>
+  {% endfor %}
+  {% if result.breakdown.penalties %}{% set b = result.breakdown.penalties %}
+    <li class="neg">
+      <div class="l-top"><span>Warning signs</span><span class="pts">{{ b.points }}</span></div>
+      <p class="l-why">{{ b.reason }}</p>
+    </li>
+  {% endif %}
+  </ul>
+
+  {% for o in result.overrides %}<div class="callout"><b>Rule applied.</b> {{ o }}</div>{% endfor %}
+  {% for f in result.flags %}<div class="callout flag">{{ f }}</div>{% endfor %}
+
+  <div class="next">
+    <h3>{{ result.action.title }}</h3>
+    <p class="small mute" style="margin:0">{{ result.action.detail }}</p>
+    <div class="meta"><span>Reply time: <b>{{ result.action.sla }}</b></span><span>Channel: <b>{{ result.action.channel }}</b></span></div>
+  </div>
+</section>

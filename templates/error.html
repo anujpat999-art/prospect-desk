@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}{{ e.code }}{% endblock %}
+{% block body %}
+<h1>{{ 'Page not found' if e.code == 404 else 'That did not work' }}</h1>
+<p class="lede">{{ e.description if e.code != 404 else 'The page or lead you asked for does not exist, or it was deleted.' }}</p>
+<a class="btn" href="{{ url_for('index') }}">Back to scoring</a>
+{% endblock %}

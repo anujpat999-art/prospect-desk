@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Prospect Desk{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="{{ url_for('index') }}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--pine)"/><circle cx="12" cy="12" r="4.2" fill="var(--hot)"/></svg>
+    Prospect Desk
+  </a>
+  {% set ep = request.endpoint %}
+  <nav aria-label="Main">
+    <a href="{{ url_for('index') }}" {% if ep == 'index' %}aria-current="page"{% endif %}>Score a lead</a>
+    <a href="{{ url_for('leads') }}" {% if ep in ('leads','lead') %}aria-current="page"{% endif %}>Pipeline</a>
+    <a href="{{ url_for('admin') }}" {% if ep and ep.startswith('admin') %}aria-current="page"{% endif %}>Admin</a>
+  </nav>
+</header>
+<main id="main">{% block body %}{% endblock %}</main>
+</body>
+</html>
