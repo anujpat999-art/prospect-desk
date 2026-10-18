@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block body %}
+{% set n = s.n or 0 %}
+{% set EV = {'lead_scored':'Lead scored','outreach_ai':'AI wrote outreach','ai_failed':'AI unavailable, rules used','ai_rejected':'AI draft rejected, rules used',
+  'status_changed':'Status changed','lead_deleted':'Lead deleted','settings_updated':'Settings changed','admin_login':'Admin signed in'} %}
+<div class="page-head">
+  <div><h1>Admin</h1><p>How the system is being used and how it is behaving.</p></div>
+  <div class="row"><a class="btn quiet" href="{{ url_for('admin_settings') }}">Scoring settings</a>
+    <a class="btn quiet" href="{{ url_for('export') }}">Export CSV</a>
+    <a class="btn quiet" href="{{ url_for('logout') }}">Sign out</a></div>
+</div>
+{% if default_pw %}<div class="note-banner"><b>Change the admin password.</b> It is still the default. Set the ADMIN_PASSWORD secret and restart.</div>{% endif %}
+
+<div class="kpis">
+  <div class="kpi"><b>{{ n }}</b><span>leads scored</span></div>
+  <div class="kpi"><b>{{ ((s.avg_score or 0))|round|int }}</b><span>average score</span></div>
+  <div class="kpi"><b>{{ seg.get('hot', 0) }}</b><span>hot leads{% if n %} ({{ (seg.get('hot', 0) / n * 100)|round|int }}%){% endif %}</span></div>
+  <div class="kpi"><b>{{ s.ai or 0 }} / {{ s.tpl or 0 }}</b><span>written by AI / by rules</span></div>
+  <div class="kpi"><b>{{ (ev.get('ai_failed', 0) + ev.get('ai_rejected', 0)) }}</b><span>AI fallbacks to rules</span></div>
+  <div class="kpi"><b>${{ '%.4f'|format(s.cost or 0) }}</b><span>AI cost ({{ (s.tin or 0) + (s.tout or 0) }} tokens)</span></div>
+</div>
+
+<div class="cols">
+  <section>
+    <h2>Leads by segment</h2>
+    {% if not n %}<p class="mute">No leads yet.</p>{% endif %}
+    <div class="bars">{% set mx = (seg.values()|max) if seg else 1 %}
+      {% for k in ['hot','warm','nurture','park'] %}<div>{{ SEGMENT_LABELS[k] }}</div><div class="bar {{ k }}"><i style="width:{{ (seg.get(k,0) / mx * 100)|round }}%"></i></div><div class="n">{{ seg.get(k, 0) }}</div>{% endfor %}
+    </div>
+    <p class="hint">If almost everything is Hot, the thresholds are too loose. If almost nothing is, they are too tight. Adjust them in scoring settings.</p>
+  </section>
+  <section>
+    <h2>Pipeline status</h2>
+    <div class="bars">{% set mx2 = (st.values()|max) if st else 1 %}
+      {% for k in STATUSES %}<div>{{ STATUS_LABELS[k] }}</div><div class="bar"><i style="width:{{ (st.get(k,0) / mx2 * 100)|round }}%"></i></div><div class="n">{{ st.get(k, 0) }}</div>{% endfor %}
+    </div>
+  </section>
+  <section>
+    <h2>Where leads come from</h2>
+    <div class="bars">{% set mx3 = (src.values()|max) if src else 1 %}
+      {% for k, v in SOURCES.items() %}{% if src.get(k) %}<div>{{ v[0] }}</div><div class="bar"><i style="width:{{ (src[k] / mx3 * 100)|round }}%"></i></div><div class="n">{{ src[k] }}</div>{% endif %}{% endfor %}
+    </div>
+    {% if not src %}<p class="mute">No data yet.</p>{% endif %}
+  </section>
+  <section>
+    <h2>Rules that changed a result</h2>
+    {% if overrides %}<table><tbody>{% for k, v in overrides.items() %}<tr><td>{{ k }}</td><td class="n"><b>{{ v }}</b></td></tr>{% endfor %}</tbody></table>
+    {% else %}<p class="mute">No override rule has fired yet.</p>{% endif %}
+    <p class="hint">Override rules cap or hold a score, for example when a lead asked not to be contacted.</p>
+  </section>
+  <section>
+    <h2>Outreach writer</h2>
+    <p>{% if ai_on %}AI is on: <b>{{ provider[0] }}</b>, model <code>{{ provider[1] }}</code>. Every AI draft is checked and replaced by a rule-based draft if it fails.{% else %}No API key is set, so every message is written by rules. Add <code>GEMINI_API_KEY</code>, <code>OPENAI_API_KEY</code> or <code>ANTHROPIC_API_KEY</code> to turn the AI writer on.{% endif %}</p>
+    <p class="small mute">Drafts so far: {{ s.ai or 0 }} by AI, {{ s.tpl or 0 }} by rules, {{ s.none_ or 0 }} none recommended.{% if s.ai_latency %} Average AI time {{ (s.ai_latency / 1000)|round(1) }}s.{% endif %}</p>
+  </section>
+  <section>
+    <h2>Leads per day</h2>
+    {% if daily %}{% set md = (daily|map(attribute='n')|max) %}
+    <div class="spark" role="img" aria-label="Leads per day, last {{ daily|length }} days with data">{% for d in daily %}<div style="height:{{ (d.n / md * 100)|round }}%" title="{{ d.day }}: {{ d.n }}"></div>{% endfor %}</div>
+    <p class="hint">{{ daily[0].day }} to {{ daily[-1].day }}. Tallest day: {{ md }}.</p>
+    {% else %}<p class="mute">No data yet.</p>{% endif %}
+  </section>
+</div>
+
+<section class="sec">
+  <h2>Latest leads</h2>
+  {% if rows %}<div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Lead</th><th class="n">Score</th><th>Segment</th><th>Status</th><th>Writer</th><th></th></tr></thead>
+    <tbody>{% for r in rows %}<tr>
+      <td>{{ r.id }}</td><td><a href="{{ url_for('lead', lid=r.id) }}">{{ r.name }}</a><br><span class="mute small">{{ r.company }}</span></td>
+      <td class="n"><b>{{ r.score }}</b></td><td><span class="seg-pill {{ r.segment }}">{{ SEGMENT_LABELS[r.segment] }}</span></td>
+      <td>{{ STATUS_LABELS[r.status] }}</td><td>{{ {'ai':'AI','template':'Rules','none':'None'}.get(r.outreach_mode, '') }}</td>
+      <td><form method="post" action="{{ url_for('admin_delete', lid=r.id) }}" onsubmit="return confirm('Delete lead {{ r.id }}?')"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="danger" type="submit">Delete</button></form></td>
+    </tr>{% endfor %}</tbody></table></div>
+  {% else %}<p class="mute">Nothing here yet. <a href="{{ url_for('index') }}">Score a lead</a>.</p>{% endif %}
+</section>
+
+<section class="sec">
+  <h2>Activity log</h2>
+  <div class="table-wrap"><table class="ev"><thead><tr><th>When</th><th>Event</th><th>Lead</th><th>Detail</th></tr></thead>
+  <tbody>{% for e in events %}<tr><td>{{ e.ts|dt }}</td><td>{{ EV.get(e.type, e.type) }}</td><td>{{ e.lead_id or '' }}</td><td class="mute">{{ e.detail|short(90) }}</td></tr>{% endfor %}</tbody></table></div>
+</section>
+{% endblock %}

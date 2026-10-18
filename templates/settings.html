@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Scoring settings{% endblock %}
+{% block body %}
+<div class="page-head"><div><h1>Scoring settings</h1><p>Describe your ideal customer. New leads are scored against this. Old leads keep the score they had.</p></div>
+  <a class="btn quiet" href="{{ url_for('admin') }}">Back to admin</a></div>
+{% if errors %}<div class="errors" role="alert"><b>Fix these first:</b><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+{% if saved %}<div class="ok-banner" role="status">Settings saved. New leads will use them.</div>{% endif %}
+<form method="post" class="lead-form" style="max-width:720px">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <fieldset><legend>Target industries</legend>
+    <div class="check-grid">{% for i in industries %}<label><input type="checkbox" name="icp_industries" value="{{ i }}" {{ 'checked' if i in s.icp_industries }}>{{ i }}</label>{% endfor %}</div></fieldset>
+  <fieldset><legend>Target company sizes</legend>
+    <div class="check-grid">{% for i in sizes %}<label><input type="checkbox" name="icp_sizes" value="{{ i }}" {{ 'checked' if i in s.icp_sizes }}>{{ i }} employees</label>{% endfor %}</div></fieldset>
+  <fieldset><legend>Target functions</legend>
+    <div class="field"><label for="f">Comma separated. Allowed: {{ functions|join(', ') }}</label><input id="f" name="icp_functions" value="{{ s.icp_functions|join(', ') }}"></div></fieldset>
+  <fieldset><legend>Segment thresholds</legend>
+    <div class="two" style="grid-template-columns:repeat(3,1fr)">
+      <div class="field"><label for="h">Hot from</label><input id="h" name="hot_min" inputmode="numeric" value="{{ s.hot_min }}"></div>
+      <div class="field"><label for="w">Warm from</label><input id="w" name="warm_min" inputmode="numeric" value="{{ s.warm_min }}"></div>
+      <div class="field"><label for="n">Nurture from</label><input id="n" name="nurture_min" inputmode="numeric" value="{{ s.nurture_min }}"></div></div>
+    <p class="hint">Below the nurture score a lead is Parked.</p></fieldset>
+  <fieldset><legend>Who is sending the outreach</legend>
+    <div class="two"><div class="field"><label for="sn">Sender name</label><input id="sn" name="sender_name" maxlength="60" value="{{ s.sender_name }}"></div>
+      <div class="field"><label for="sc">Company name</label><input id="sc" name="sender_company" maxlength="80" value="{{ s.sender_company }}"></div></div>
+    <div class="field"><label for="of">What you do, finishing the sentence "We can…"</label><input id="of" name="offer" maxlength="160" value="{{ s.offer }}"></div></fieldset>
+  <button type="submit">Save settings</button>
+</form>
+{% endblock %}
