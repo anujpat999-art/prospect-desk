@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ r.name }}, {{ r.company }}{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div>
+    <h1>{{ r.name }}</h1>
+    <p>{{ r.role }} at {{ r.company }}. {{ r.industry }}, {{ r.size }} employees.</p>
+  </div>
+  <div class="row no-print">
+    <a class="btn quiet" href="{{ url_for('index') }}">Score another lead</a>
+    <a class="btn quiet" href="{{ url_for('leads') }}">Open the pipeline</a>
+  </div>
+</div>
+<div class="result">
+  <div>{% include "_scorecard.html" %}</div>
+  <div>
+    <h2>Suggested outreach</h2>
+    {% if r.outreach_mode == 'none' %}
+      <p class="mute">No message is recommended for this lead. {% for n in r.outreach_notes %}{{ n }} {% endfor %}The next step on the left explains why.</p>
+    {% else %}
+      <span class="tag {{ 'ai' if r.outreach_mode == 'ai' }}">{% if r.outreach_mode == 'ai' %}Written by AI ({{ r.provider }}, {{ r.model }}){% else %}Written by rules{% endif %}</span>
+      <p class="subj" id="subj">{{ r.outreach_subject }}</p>
+      <pre class="letter" id="letter">{{ r.outreach_body }}</pre>
+      {% for n in r.outreach_notes %}<p class="small mute">{{ n }}</p>{% endfor %}
+      <button type="button" class="quiet no-print" id="copy">Copy message</button>
+      <span class="small mute" id="copied" role="status"></span>
+    {% endif %}
+
+    <div class="sec">
+      <h2>Where this lead stands</h2>
+      <form method="post" action="{{ url_for('lead_status', lid=r.id) }}" class="row no-print">
+        <input type="hidden" name="csrf" value="{{ csrf() }}">
+        <label for="status" class="sr">Status</label>
+        <select id="status" name="status" style="width:auto;border:1.5px solid var(--rule);border-radius:7px;padding:8px 10px">
+          {% for s in STATUSES %}<option value="{{ s }}" {{ 'selected' if s == r.status }}>{{ STATUS_LABELS[s] }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="quiet">Update status</button>
+      </form>
+      <p class="small mute" style="margin-top:8px">Added {{ r.created_at|dt }}. Lead #{{ r.id }}.</p>
+    </div>
+
+    <div class="sec">
+      <h2>What you told us</h2>
+      <dl class="facts">
+        <dt>Source</dt><dd>{{ SOURCES[r.source][0] if r.source in SOURCES else r.source }}</dd>
+        <dt>Last contact</dt><dd>{% if r.last_contact_days is none %}Not logged{% else %}{{ r.last_contact_days }} day{{ '' if r.last_contact_days == 1 else 's' }} ago{% endif %}</dd>
+        <dt>Signals found</dt><dd>{% if r.signals %}{% for s in r.signals %}{{ s.label }}{{ ', ' if not loop.last }}{% endfor %}{% else %}None{% endif %}</dd>
+      </dl>
+      {% if r.context %}<blockquote class="ctx">{{ r.context }}</blockquote>{% endif %}
+    </div>
+  </div>
+</div>
+<script>
+(function(){var b=document.getElementById("copy");if(!b)return;
+b.addEventListener("click",function(){var t=document.getElementById("subj").textContent+"\n\n"+document.getElementById("letter").textContent;
+var done=function(m){document.getElementById("copied").textContent=m;};
+if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){done("Copied.");},function(){done("Select the text and copy it manually.");});}
+else{done("Select the text and copy it manually.");}});})();
+</script>
+{% endblock %}

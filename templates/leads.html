@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Pipeline{% endblock %}
+{% block body %}
+<div class="page-head"><div><h1>Pipeline</h1><p>Every scored lead, highest score first.</p></div>
+  <a class="btn" href="{{ url_for('index') }}">Score a lead</a></div>
+<form class="filters" method="get" action="{{ url_for('leads') }}">
+  <a class="chip" href="{{ url_for('leads', status=status, q=q) }}" {% if not seg %}aria-current="true"{% endif %}>All</a>
+  {% for k in ['hot','warm','nurture','park'] %}<a class="chip" href="{{ url_for('leads', segment=k, status=status, q=q) }}" {% if seg == k %}aria-current="true"{% endif %}>{{ SEGMENT_LABELS[k] }}</a>{% endfor %}
+  {% if seg %}<input type="hidden" name="segment" value="{{ seg }}">{% endif %}
+  <label for="status" class="sr">Status</label>
+  <select id="status" name="status" onchange="this.form.submit()">
+    <option value="">Any status</option>{% for s in STATUSES %}<option value="{{ s }}" {{ 'selected' if status == s }}>{{ STATUS_LABELS[s] }}</option>{% endfor %}
+  </select>
+  <label for="q" class="sr">Search</label>
+  <input id="q" type="search" name="q" value="{{ q }}" placeholder="Search name or company">
+</form>
+{% if not rows %}
+  <p class="lede">No leads match. <a href="{{ url_for('index') }}">Score your first lead</a>, or clear the filters.</p>
+{% else %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Score</th><th>Lead</th><th>Segment</th><th>Next step</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td><div class="mini-score {{ r.segment }}"><span>{{ r.score }}</span><div class="meter"><i style="width:{{ r.score }}%"></i></div></div></td>
+      <td><a href="{{ url_for('lead', lid=r.id) }}"><b>{{ r.name }}</b></a><br><span class="mute small">{{ r.role }}, {{ r.company }}</span></td>
+      <td><span class="seg-pill {{ r.segment }}">{{ SEGMENT_LABELS[r.segment] }}</span></td>
+      <td>{{ r.action_title }}<br><span class="mute small">{{ r.action_sla }}</span></td>
+      <td>{{ STATUS_LABELS[r.status] }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endif %}
+{% endblock %}
